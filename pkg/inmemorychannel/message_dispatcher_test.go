@@ -47,7 +47,8 @@ import (
 
 func TestNewMessageDispatcher(t *testing.T) {
 	logger := logtesting.TestLogger(t).Desugar()
-	sh, err := swappable.NewEmptyMessageHandler(context.TODO(), logger, channel.NewMessageDispatcher(logger))
+	reporter := channel.NewStatsReporter("testcontainer", "testpod")
+	sh, err := swappable.NewEmptyMessageHandler(context.TODO(), logger, channel.NewMessageDispatcher(logger), reporter)
 
 	if err != nil {
 		t.Fatalf("Failed to create handler")
@@ -71,7 +72,8 @@ func TestNewMessageDispatcher(t *testing.T) {
 // This test emulates a real dispatcher usage
 func TestDispatcher_close(t *testing.T) {
 	logger := logtesting.TestLogger(t).Desugar()
-	sh, err := swappable.NewEmptyMessageHandler(context.TODO(), logger, channel.NewMessageDispatcher(logger))
+	reporter := channel.NewStatsReporter("testcontainer", "testpod")
+	sh, err := swappable.NewEmptyMessageHandler(context.TODO(), logger, channel.NewMessageDispatcher(logger), reporter)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,6 +110,7 @@ func TestDispatcher_close(t *testing.T) {
 // This test emulates a real dispatcher usage
 func TestDispatcher_dispatch(t *testing.T) {
 	logger, err := zap.NewDevelopment(zap.AddStacktrace(zap.WarnLevel))
+	reporter := channel.NewStatsReporter("testcontainer", "testpod")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +118,7 @@ func TestDispatcher_dispatch(t *testing.T) {
 	// tracing publishing is configured to let the code pass in all "critical" branches
 	tracing.SetupStaticPublishing(logger.Sugar(), "localhost", tracing.AlwaysSample)
 
-	sh, err := swappable.NewEmptyMessageHandler(context.TODO(), logger, channel.NewMessageDispatcher(logger))
+	sh, err := swappable.NewEmptyMessageHandler(context.TODO(), logger, channel.NewMessageDispatcher(logger), reporter)
 	if err != nil {
 		t.Fatal(err)
 	}
